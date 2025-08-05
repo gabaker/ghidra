@@ -1,0 +1,28 @@
+name: Build Ghidra Release Container
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build-ghidra-container:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: "${{ github.token }}"
+    steps:
+      - name: Checkout Ghidra Repo
+        uses: actions/checkout@v4
+      - name: Download release artifacts
+        run:  |
+          curl -L -o artifacts.zip "${{ github.event.release.assets[0].browser_download_url }}"
+          ls
+          gh release download ${{ github.event.release.tag_name }} --clobber
+          ls
+          #ls
+          #unzip artifacts.zip -d ./artifacts
+          #ls
+      - name: Build container image
+        run: |
+          cd artifacts
+          ./docker/build-docker-image.sh
+          docker image ls
